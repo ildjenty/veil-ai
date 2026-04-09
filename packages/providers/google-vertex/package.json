@@ -1,7 +1,7 @@
 {
-  "name": "@veil-ai/google-genai",
+  "name": "@veil-ai/google-vertex",
   "version": "0.0.1",
-  "description": "Google Generative AI provider for veil-ai",
+  "description": "Google Vertex AI provider for veil-ai",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,15 +14,20 @@
   "files": ["dist"],
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "license": "MIT",
   "engines": { "node": ">=20" },
   "publishConfig": { "access": "public" },
-  "dependencies": {
-    "veil-ai": "workspace:*"
+  "peerDependencies": {
+    "veil-ai": ">=0.0.1",
+    "@google-cloud/vertexai": ">=1.0.0"
   },
   "devDependencies": {
-    "typescript": "^6.0.2"
+    "veil-ai": "workspace:*",
+    "@google-cloud/vertexai": "^1.11.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.3"
   }
 }

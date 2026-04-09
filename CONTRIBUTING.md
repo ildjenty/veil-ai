@@ -14,14 +14,15 @@ pnpm test
 
 ```
 packages/
-  veil-ai/        — Framework core (veil-ai on npm)
-  anthropic/      — Anthropic Claude provider
-  openai/         — OpenAI provider
-  google-genai/   — Google Generative AI provider
-  google-vertex/  — Google Vertex AI provider
-  cli/            — CLI tool
-snippets/         — Code snippets (distributed via CLI)
-docs/             — Documentation site (Starlight)
+  veil-ai/            — Framework core (veil-ai on npm)
+  cli/                — CLI tool
+  providers/
+    anthropic/        — Anthropic Claude provider
+    openai/           — OpenAI provider
+    google-genai/     — Google Generative AI provider
+    google-vertex/    — Google Vertex AI provider
+snippets/             — Code snippets (distributed via CLI)
+docs/                 — Documentation site (Starlight)
 ```
 
 ## Pull Requests
