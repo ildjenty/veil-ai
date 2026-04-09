@@ -1,0 +1,20 @@
+{
+  "name": "@veil-ai/cli",
+  "version": "0.0.1",
+  "description": "CLI for veil-ai — add snippets to your project",
+  "type": "module",
+  "bin": {
+    "veil-ai": "dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "publishConfig": { "access": "public" },
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}
