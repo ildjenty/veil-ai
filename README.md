@@ -10,8 +10,6 @@ Zero dependencies. Protocol-driven. Provider-agnostic.
 - **Protocol / Kit separation** — Types and interfaces (`protocol`) are separate from implementations (`kit`).
 - **Middleware-based extensibility** — Agent, LLM, and Tool middleware for observation and modification at every layer.
 - **Multi-agent composition** — Sequential, Parallel, Loop agents. Transfer and Escalate for control flow.
-- **Provider-agnostic** — Anthropic, OpenAI, Gemini via adapter packages.
-- **Structured output** — Force LLM responses to match a JSON Schema.
 
 ## Packages
 
