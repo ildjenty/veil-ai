@@ -24,7 +24,7 @@ importers:
     dependencies:
       veil-ai:
         specifier: workspace:*
-        version: link:../core
+        version: link:../veil-ai
     devDependencies:
       typescript:
         specifier: ^6.0.2
@@ -36,17 +36,11 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2
 
-  packages/core:
-    devDependencies:
-      typescript:
-        specifier: ^6.0.2
-        version: 6.0.2
-
-  packages/gemini:
+  packages/google-genai:
     dependencies:
       veil-ai:
         specifier: workspace:*
-        version: link:../core
+        version: link:../veil-ai
     devDependencies:
       typescript:
         specifier: ^6.0.2
@@ -56,7 +50,13 @@ importers:
     dependencies:
       veil-ai:
         specifier: workspace:*
-        version: link:../core
+        version: link:../veil-ai
+    devDependencies:
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
+
+  packages/veil-ai:
     devDependencies:
       typescript:
         specifier: ^6.0.2

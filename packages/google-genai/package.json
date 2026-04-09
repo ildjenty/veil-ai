@@ -1,7 +1,7 @@
 {
-  "name": "@veil-ai/gemini",
+  "name": "@veil-ai/google-genai",
   "version": "0.0.1",
-  "description": "Google Gemini provider for veil-ai",
+  "description": "Google Generative AI provider for veil-ai",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

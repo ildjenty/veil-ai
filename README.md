@@ -20,7 +20,8 @@ Zero dependencies. Protocol-driven. Provider-agnostic.
 | `veil-ai` | Core framework |
 | `@veil-ai/anthropic` | Anthropic Claude provider |
 | `@veil-ai/openai` | OpenAI provider |
-| `@veil-ai/gemini` | Google Gemini provider |
+| `@veil-ai/google-genai` | Google Generative AI provider |
+| `@veil-ai/google-vertex` | Google Vertex AI provider |
 | `@veil-ai/cli` | CLI for adding code snippets |
 
 ## Quick Start
