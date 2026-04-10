@@ -15,6 +15,8 @@ export type {
   BaseSessionService,
   LlmGenerateOptions,
   LlmResponse,
+  LlmStreamChunk,
+  LlmStreamResponse,
   LlmProvider,
   ToolDeclaration,
   Tool,

@@ -4,6 +4,7 @@ import type {
   LlmProvider,
   LlmGenerateOptions,
   LlmResponse,
+  LlmStreamResponse,
   LlmContentPart,
   Message,
   ContentPart,
@@ -31,6 +32,7 @@ export class GoogleGenAIProvider implements LlmProvider {
 
     const config: Record<string, unknown> = {
       maxOutputTokens: options.maxTokens ?? this.defaultMaxTokens,
+      ...options.providerOptions,
     };
 
     if (options.systemPrompt) {
@@ -61,6 +63,69 @@ export class GoogleGenAIProvider implements LlmProvider {
     });
 
     return fromGeminiResponse(response, options.outputSchema != null);
+  }
+
+  async generateStream(options: LlmGenerateOptions): Promise<LlmStreamResponse> {
+    const contents = toGeminiContents(options.messages);
+
+    const config: Record<string, unknown> = {
+      maxOutputTokens: options.maxTokens ?? this.defaultMaxTokens,
+      ...options.providerOptions,
+    };
+
+    if (options.systemPrompt) {
+      config.systemInstruction = options.systemPrompt;
+    }
+
+    if (options.tools && options.tools.length > 0) {
+      config.tools = [
+        {
+          functionDeclarations: options.tools.map((t) => ({
+            name: t.name,
+            description: t.description,
+            parametersJsonSchema: t.inputSchema,
+          })),
+        },
+      ];
+    }
+
+    if (options.outputSchema) {
+      config.responseMimeType = "application/json";
+      config.responseJsonSchema = options.outputSchema;
+    }
+
+    const result = await this.client.models.generateContentStream({
+      model: this.model,
+      contents,
+      config,
+    });
+
+    const hasOutputSchema = options.outputSchema != null;
+
+    let resolveResponse!: (r: LlmResponse) => void;
+    const response = new Promise<LlmResponse>((resolve) => {
+      resolveResponse = resolve;
+    });
+
+    async function* streamChunks() {
+      let lastChunk: GenerateContentResponse | undefined;
+
+      for await (const chunk of result) {
+        lastChunk = chunk;
+        const text = chunk.text;
+        if (text) {
+          yield { type: "text" as const, text };
+        }
+      }
+
+      resolveResponse(
+        lastChunk
+          ? fromGeminiResponse(lastChunk, hasOutputSchema)
+          : { content: [], stopReason: "end", usage: { input: 0, output: 0 } },
+      );
+    }
+
+    return { stream: streamChunks(), response };
   }
 }
 

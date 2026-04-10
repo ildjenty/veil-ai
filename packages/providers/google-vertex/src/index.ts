@@ -5,12 +5,14 @@ import type {
   GenerateContentResult,
   GenerationConfig,
   Part,
+  StreamGenerateContentResult,
   Tool as VertexTool,
 } from "@google-cloud/vertexai";
 import type {
   LlmProvider,
   LlmGenerateOptions,
   LlmResponse,
+  LlmStreamResponse,
   LlmContentPart,
   Message,
   ContentPart,
@@ -50,8 +52,11 @@ export class GoogleVertexProvider implements LlmProvider {
           ]
         : undefined;
 
+    const { providerOptions } = options;
+
     const generationConfig: GenerationConfig = {
       maxOutputTokens: options.maxTokens ?? this.defaultMaxTokens,
+      ...(providerOptions?.generationConfig as GenerationConfig),
     };
 
     if (options.outputSchema) {
@@ -66,6 +71,7 @@ export class GoogleVertexProvider implements LlmProvider {
       systemInstruction: options.systemPrompt
         ? { role: "user", parts: [{ text: options.systemPrompt }] }
         : undefined,
+      ...(providerOptions?.modelOptions as Record<string, unknown>),
     });
 
     const contents = toVertexContents(options.messages);
@@ -75,6 +81,68 @@ export class GoogleVertexProvider implements LlmProvider {
     const response = result.response;
 
     return fromVertexResponse(response, options.outputSchema != null);
+  }
+
+  async generateStream(
+    options: LlmGenerateOptions,
+  ): Promise<LlmStreamResponse> {
+    const { providerOptions } = options;
+
+    const tools: VertexTool[] | undefined =
+      options.tools && options.tools.length > 0
+        ? [
+            {
+              functionDeclarations: options.tools.map(
+                toVertexFunctionDeclaration,
+              ),
+            },
+          ]
+        : undefined;
+
+    const generationConfig: GenerationConfig = {
+      maxOutputTokens: options.maxTokens ?? this.defaultMaxTokens,
+      ...(providerOptions?.generationConfig as GenerationConfig),
+    };
+
+    if (options.outputSchema) {
+      generationConfig.responseMimeType = "application/json";
+      generationConfig.responseSchema = toVertexSchema(options.outputSchema);
+    }
+
+    const generativeModel = this.vertexAI.getGenerativeModel({
+      model: this.model,
+      tools,
+      generationConfig,
+      systemInstruction: options.systemPrompt
+        ? { role: "user", parts: [{ text: options.systemPrompt }] }
+        : undefined,
+      ...(providerOptions?.modelOptions as Record<string, unknown>),
+    });
+
+    const contents = toVertexContents(options.messages);
+    const result: StreamGenerateContentResult =
+      await generativeModel.generateContentStream({ contents });
+
+    const hasOutputSchema = options.outputSchema != null;
+
+    let resolveResponse!: (r: LlmResponse) => void;
+    const response = new Promise<LlmResponse>((resolve) => {
+      resolveResponse = resolve;
+    });
+
+    async function* streamChunks() {
+      for await (const chunk of result.stream) {
+        const text = chunk.candidates?.[0]?.content?.parts?.[0];
+        if (text && "text" in text && text.text) {
+          yield { type: "text" as const, text: text.text };
+        }
+      }
+
+      const finalResponse = await result.response;
+      resolveResponse(fromVertexResponse(finalResponse, hasOutputSchema));
+    }
+
+    return { stream: streamChunks(), response };
   }
 }
 

@@ -7,6 +7,7 @@ export interface LlmGenerateOptions {
   systemPrompt?: string;
   maxTokens?: number;
   outputSchema?: Record<string, unknown>;
+  providerOptions?: Record<string, unknown>;
 }
 
 export interface LlmResponse {
@@ -15,6 +16,17 @@ export interface LlmResponse {
   usage: { input: number; output: number };
 }
 
+export interface LlmStreamChunk {
+  type: "text";
+  text: string;
+}
+
+export interface LlmStreamResponse {
+  stream: AsyncIterable<LlmStreamChunk>;
+  response: Promise<LlmResponse>;
+}
+
 export interface LlmProvider {
   generate(options: LlmGenerateOptions): Promise<LlmResponse>;
+  generateStream?(options: LlmGenerateOptions): Promise<LlmStreamResponse>;
 }

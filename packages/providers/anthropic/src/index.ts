@@ -3,6 +3,7 @@ import type {
   LlmProvider,
   LlmGenerateOptions,
   LlmResponse,
+  LlmStreamResponse,
   LlmContentPart,
   Message,
   ContentPart,
@@ -33,6 +34,7 @@ export class AnthropicProvider implements LlmProvider {
       system: options.systemPrompt,
       messages: options.messages.map(toAnthropicMessage),
       tools: options.tools?.map(toAnthropicTool),
+      ...options.providerOptions,
     });
 
     return {
@@ -43,6 +45,41 @@ export class AnthropicProvider implements LlmProvider {
         output: response.usage.output_tokens,
       },
     };
+  }
+
+  async generateStream(options: LlmGenerateOptions): Promise<LlmStreamResponse> {
+    const stream = this.client.messages.stream({
+      model: this.model,
+      max_tokens: options.maxTokens ?? this.defaultMaxTokens,
+      system: options.systemPrompt,
+      messages: options.messages.map(toAnthropicMessage),
+      tools: options.tools?.map(toAnthropicTool),
+      ...options.providerOptions,
+    });
+
+    const asyncIterable = {
+      async *[Symbol.asyncIterator]() {
+        for await (const event of stream) {
+          if (
+            event.type === "content_block_delta" &&
+            event.delta.type === "text_delta"
+          ) {
+            yield { type: "text" as const, text: event.delta.text };
+          }
+        }
+      },
+    };
+
+    const response = stream.finalMessage().then((msg) => ({
+      content: msg.content.flatMap(fromAnthropicContent),
+      stopReason: mapStopReason(msg.stop_reason),
+      usage: {
+        input: msg.usage.input_tokens,
+        output: msg.usage.output_tokens,
+      },
+    }));
+
+    return { stream: asyncIterable, response };
   }
 }
 
